@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Rainy Day Birthday Surprise 🌧️🎂</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky-top: #9ccdf2;
+      --sky-mid: #bfe2fc;
+      --sky-bot: #dff1ff;
+      --card-bg: rgba(255, 255, 255, 0.58);
+      --card-border: rgba(255, 255, 255, 0.85);
+      --text-main: #1d4268;
+      --text-soft: #487099;
+      --accent: #4c9be8;
+      --accent-hover: #3687d6;
+      --pink-soft: #ff8fb1;
+      --warm-glow: #ffd166;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100dvh;
+      width: 100%;
+      font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 52%, var(--sky-bot) 100%);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Soft misty clouds / ambient bokeh in background */
+    .mist-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.55) 0%, transparent 40%),
+        radial-gradient(circle at 82% 15%, rgba(255, 255, 255, 0.45) 0%, transparent 38%),
+        radial-gradient(circle at 50% 85%, rgba(164, 211, 248, 0.45) 0%, transparent 50%);
+      filter: blur(18px);
+    }
+
+    /* Blurry gentle drizzle rain canvas */
+    #rainCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      filter: blur(1.4px);
+      opacity: 0.85;
+    }
+
+    /* Confetti canvas for birthday celebration */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    /* Main centered wrapper */
+    .stage {
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      max-width: 410px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Glassmorphic cozy card */
+    .card {
+      position: relative;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 2px solid var(--card-border);
+      border-radius: 30px;
+      padding: 36px 24px 30px;
+      box-shadow:
+        0 20px 45px rgba(45, 98, 150, 0.16),
+        inset 0 2px 10px rgba(255, 255, 255, 0.75);
+      text-align: center;
+      transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .card.hidden {
+      display: none;
+      opacity: 0;
+      transform: scale(0.94) translateY(14px);
+    }
+
+    .card.fade-out {
+      opacity: 0;
+      transform: scale(0.92) translateY(-14px);
+      pointer-events: none;
+    }
+
+    .card.pop-in {
+      animation: popIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Sticker styling (die-cut white outline + soft drop shadow) */
+    .sticker {
+      display: inline-block;
+      filter: drop-shadow(0 5px 8px rgba(30, 66, 104, 0.16));
+      user-select: none;
+    }
+
+    .sticker-float {
+      animation: floatGentle 3.6s ease-in-out infinite;
+    }
+
+    .sticker-float-slow {
+      animation: floatGentle 4.4s ease-in-out infinite reverse;
+    }
+
+    @keyframes floatGentle {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+
+    /* Corner decorative stickers on cards */
+    .corner-sticker {
+      position: absolute;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .corner-tl {
+      top: -24px;
+      left: -12px;
+      transform: rotate(-10deg);
+    }
+
+    .corner-tr {
+      top: -22px;
+      right: -12px;
+      transform: rotate(12deg);
+    }
+
+    .corner-bl {
+      bottom: -18px;
+      left: -10px;
+      transform: rotate(-8deg);
+    }
+
+    .corner-br {
+      bottom: -20px;
+      right: -10px;
+      transform: rotate(10deg);
+    }
+
+    /* Lock Screen Styling */
+    .lock-hero-sticker {
+      margin-bottom: 10px;
+    }
+
+    .lock-title {
+      font-size: 1.32rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+
+    .rain-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-soft);
+      margin-bottom: 20px;
+    }
+
+    .input-wrap {
+      position: relative;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+
+    .password-input {
+      width: 100%;
+      padding: 15px 48px 15px 18px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-align: center;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid rgba(133, 187, 235, 0.75);
+      border-radius: 18px;
+      outline: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+    }
+
+    .password-input::placeholder {
+      letter-spacing: normal;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #87a6c4;
+    }
+
+    .password-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(76, 155, 232, 0.2);
+    }
+
+    .toggle-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-soft);
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .toggle-eye:hover {
+      background: rgba(76, 155, 232, 0.12);
+    }
+
+    .unlock-btn {
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #5daef5 0%, #3a8ee0 100%);
+      color: #ffffff;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(58, 142, 224, 0.3);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+      margin-bottom: 14px;
+    }
+
+    .unlock-btn:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+    }
+
+    .unlock-btn:active {
+      transform: scale(0.98);
+    }
+
+    .hint-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px dashed rgba(105, 164, 219, 0.75);
+      border-radius: 14px;
+      padding: 8px 14px;
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      line-height: 1.35;
+    }
+
+    .error-msg {
+      min-height: 20px;
+      font-size: 0.86rem;
+      color: #d94e67;
+      font-weight: 500;
+      margin-bottom: 8px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .error-msg.show {
+      opacity: 1;
+    }
+
+    .shake {
+      animation: shakeAnim 0.42s ease-in-out;
+    }
+
+    @keyframes shakeAnim {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+
+    /* Birthday Screen Styling */
+    .bday-card {
+      padding: 38px 22px 32px;
+    }
+
+    .bday-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.78);
+      color: #4682b4;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(164, 208, 245, 0.8);
+    }
+
+    .bday-title {
+      font-family: 'Pacifico', 'Fredoka', cursive;
+      font-size: 2.25rem;
+      font-weight: 400;
+      color: #1f4d7a;
+      text-shadow: 0 3px 0 rgba(255, 255, 255, 0.9);
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .bday-sub {
+      font-size: 0.95rem;
+      color: var(--text-soft);
+      margin-bottom: 18px;
+    }
+
+    /* Cake Stage */
+    .cake-container {
+      position: relative;
+      width: 220px;
+      height: 210px;
+      margin: 8px auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .candle-ambient-glow {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 95px;
+      background: radial-gradient(circle, rgba(255, 217, 102, 0.55) 0%, rgba(255, 180, 90, 0.15) 55%, transparent 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: glowPulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.85; }
+      50% { transform: translateX(-50%) scale(1.12); opacity: 1; }
+    }
+
+    /* Animated flames inside SVG */
+    .flame {
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      animation: flicker 0.9s ease-in-out infinite alternate;
+    }
+
+    .flame-2 {
+      animation-delay: 0.25s;
+      animation-duration: 1.05s;
+    }
+
+    .flame-3 {
+      animation-delay: 0.45s;
+      animation-duration: 0.85s;
+    }
+
+    @keyframes flicker {
+      0% {
+        transform: scale(1) rotate(-3deg);
+        opacity: 0.95;
+      }
+      50% {
+        transform: scale(1.08, 0.94) rotate(2deg);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.96, 1.08) rotate(-2deg);
+        opacity: 0.92;
+      }
+    }
+
+    .bday-sticker-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .wish-pill {
+      margin-top: 12px;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.68);
+      padding: 10px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      line-height: 1.45;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 420px) {
+      .card {
+        padding: 32px 18px 26px;
+        border-radius: 26px;
+      }
+      .bday-title {
+        font-size: 1.95rem;
+      }
+      .corner-tl { left: -6px; top: -20px; }
+      .corner-tr { right: -6px; top: -18px; }
+      .corner-bl { left: -4px; bottom: -16px; }
+      .corner-br { right: -4px; bottom: -16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Soft misty rainy sky glow -->
+  <div class="mist-layer"></div>
+
+  <!-- Blurry gentle rain canvas -->
+  <canvas id="rainCanvas"></canvas>
+
+  <!-- Soft celebration confetti canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="stage">
+
+    <!-- ==================== 1. PASSWORD SCREEN ==================== -->
+    <section id="lockScreen" class="card" aria-label="Password Screen">
+
+      <!-- Corner Sticker: Cute Rain Cloud -->
+      <div class="corner-sticker corner-tl sticker sticker-float">
+        <svg width="64" height="58" viewBox="0 0 80 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Die-cut sticker border -->
+          <path d="M24 52H56C63.7 52 70 45.7 70 38C70 31.1 65 25.4 58.4 24.2C56.3 15.5 48.5 9 39 9C28 9 19 18 19 29C19 29.4 19 29.8 19.1 30.2C13.4 31.7 9 36.9 9 43C9 48 13 52 18 52H24Z" fill="white" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+          <!-- Cloud body -->
+          <path d="M24 52H56C63.7 52 70 45.7 70 38C70 31.1 65 25.4 58.4 24.2C56.3 15.5 48.5 9 39 9C28 9 19 18 19 29C19 29.4 19 29.8 19.1 30.2C13.4 31.7 9 36.9 9 43C9 48 13 52 18 52H24Z" fill="#D6EEFF" stroke="#7EB8EB" stroke-width="2.5"/>
+          <!-- Cute face -->
+          <circle cx="33" cy="34" r="2.3" fill="#2A547E"/>
+          <circle cx="47" cy="34" r="2.3" fill="#2A547E"/>
+          <circle cx="29" cy="38" r="3" fill="#FFB5C5" opacity="0.8"/>
+          <circle cx="51" cy="38" r="3" fill="#FFB5C5" opacity="0.8"/>
+          <path d="M37 37C38.5 39 41.5 39 43 37" stroke="#2A547E" stroke-width="2" stroke-linecap="round"/>
+          <!-- Raindrops -->
+          <path d="M28 58C28 58 25 63 25 65C25 66.7 26.3 68 28 68C29.7 68 31 66.7 31 65C31 63 28 58 28 58Z" fill="#6BB6F5" stroke="white" stroke-width="2"/>
+          <path d="M41 59C41 59 38 64 38 66C38 67.7 39.3 69 41 69C42.7 69 44 67.7 44 66C44 64 41 59 41 59Z" fill="#6BB6F5" stroke="white" stroke-width="2"/>
+          <path d="M53 58C53 58 50 63 50 65C50 66.7 51.3 68 53 68C54.7 68 56 66.7 56 65C56 63 53 58 53 58Z" fill="#6BB6F5" stroke="white" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <!-- Corner Sticker: Cute Umbrella -->
+      <div class="corner-sticker corner-tr sticker sticker-float-slow">
+        <svg width="58" height="58" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="36" r="28" fill="white"/>
+          <path d="M36 12V16" stroke="#4D88C4" stroke-width="3" stroke-linecap="round"/>
+          <path d="M12 36C12 22.7 22.7 15 36 15C49.3 15 60 22.7 60 36C55 33.5 50 34 46 36C42 33.5 38 33.5 36 36C34 33.5 30 33.5 26 36C22 34 17 33.5 12 36Z" fill="#82C4FA" stroke="#4D88C4" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M26 36C27 23 31 16 36 15C41 16 45 23 46 36" fill="#FFD1E0" stroke="#4D88C4" stroke-width="2"/>
+          <path d="M36 36V53C36 56.5 33.5 59 30.5 59C28 59 26.5 57.5 26.5 55.5" stroke="#4D88C4" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Center Hero Sticker: Cozy Heart Lock -->
+      <div class="lock-hero-sticker sticker sticker-float">
+        <svg width="78" height="78" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="72" height="72" rx="24" fill="white"/>
+          <!-- Shackle -->
+          <path d="M31 39V29C31 21.8 36.8 16 44 16C51.2 16 57 21.8 57 29V39" stroke="#5A96D1" stroke-width="6" stroke-linecap="round"/>
+          <!-- Lock Body -->
+          <rect x="23" y="37" width="42" height="33" rx="11" fill="#A2D4FC" stroke="#5A96D1" stroke-width="2.5"/>
+          <!-- Cute Heart Keyhole -->
+          <path d="M44 60C44 60 35 54 35 48.5C35 45.8 37.2 44 39.5 44C41.5 44 43.2 45.2 44 46.8C44.8 45.2 46.5 44 48.5 44C50.8 44 53 45.8 53 48.5C53 54 44 60 44 60Z" fill="#FF8FB1" stroke="white" stroke-width="2"/>
+          <!-- Sparkle -->
+          <path d="M67 22L68.5 25.5L72 27L68.5 28.5L67 32L65.5 28.5L62 27L65.5 25.5L67 22Z" fill="#FFD166"/>
+        </svg>
+      </div>
+
+      <h1 class="lock-title">Enter Password to unlock this</h1>
+      <p class="rain-subtitle">A cozy rainy-day surprise awaits inside 🌧️💙</p>
+
+      <div class="input-wrap">
+        <input
+          id="passwordInput"
+          class="password-input"
+          type="password"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="8"
+          placeholder="Enter numbers..."
+          autocomplete="off"
+          aria-label="Enter Password to unlock this"
+        />
+        <button id="toggleVis" class="toggle-eye" type="button" aria-label="Show or hide password">
+          <!-- Eye Icon -->
+          <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
+
+      <div id="errorMsg" class="error-msg">Oops! Try again 💧</div>
+
+      <button id="unlockBtn" class="unlock-btn" type="button">Unlock Surprise 🔓</button>
+
+      <div class="hint-box">
+        <span>💡</span>
+        <span>Hint: Password is your birthday date.</span>
+      </div>
+
+      <!-- Bottom Corner Sticker: Raindrop Friend -->
+      <div class="corner-sticker corner-br sticker sticker-float-slow">
+        <svg width="50" height="54" viewBox="0 0 60 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M30 8C30 8 11 31 11 43C11 53.5 19.5 60 30 60C40.5 60 49 53.5 49 43C49 31 30 8 30 8Z" fill="white" stroke="white" stroke-width="7" stroke-linejoin="round"/>
+          <path d="M30 8C30 8 11 31 11 43C11 53.5 19.5 60 30 60C40.5 60 49 53.5 49 43C49 31 30 8 30 8Z" fill="#9BD2FD" stroke="#5397D6" stroke-width="2.5"/>
+          <circle cx="24" cy="42" r="2.2" fill="#1F4A75"/>
+          <circle cx="36" cy="42" r="2.2" fill="#1F4A75"/>
+          <path d="M27 46C28.5 48 31.5 48 33 46" stroke="#1F4A75" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="22" cy="29" rx="2.5" ry="5" transform="rotate(20 22 29)" fill="white" opacity="0.75"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ==================== 2. HAPPY BIRTHDAY SCREEN ==================== -->
+    <section id="birthdayScreen" class="card bday-card hidden" aria-label="Birthday Screen">
+
+      <!-- Corner Sticker: Party Popper / Celebration -->
+      <div class="corner-sticker corner-tl sticker sticker-float">
+        <svg width="62" height="62" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="36" r="29" fill="white"/>
+          <!-- Party cone -->
+          <path d="M18 54L27 28L46 47L18 54Z" fill="#FFD166" stroke="#E09F3E" stroke-width="2.2" stroke-linejoin="round"/>
+          <path d="M23 39L35 50" stroke="#FF8FB1" stroke-width="3" stroke-linecap="round"/>
+          <!-- Ribbons & stars -->
+          <path d="M40 24C44 20 48 22 50 18" stroke="#6BB6F5" stroke-width="3" stroke-linecap="round"/>
+          <path d="M49 34C54 32 56 35 60 32" stroke="#FF8FB1" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="35" cy="17" r="3" fill="#FF8FB1"/>
+          <circle cx="53" cy="24" r="2.5" fill="#7AD3A8"/>
+          <circle cx="51" cy="43" r="2.8" fill="#6BB6F5"/>
+        </svg>
+      </div>
+
+      <!-- Corner Sticker: Cute Rainy Rainbow -->
+      <div class="corner-sticker corner-tr sticker sticker-float-slow">
+        <svg width="66" height="58" viewBox="0 0 80 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="8" width="68" height="54" rx="24" fill="white"/>
+          <!-- Rainbow arcs -->
+          <path d="M20 44C20 30 30 20 42 20C54 20 62 30 62 44" stroke="#FF8FB1" stroke-width="5" stroke-linecap="round"/>
+          <path d="M25 44C25 33 32 25 42 25C51 25 57 33 57 44" stroke="#FFD166" stroke-width="5" stroke-linecap="round"/>
+          <path d="M30 44C30 36 35 30 42 30C48 30 52 36 52 44" stroke="#7CC4FA" stroke-width="5" stroke-linecap="round"/>
+          <!-- Mini clouds -->
+          <circle cx="22" cy="46" r="7" fill="#E3F2FD" stroke="#85BDE8" stroke-width="2"/>
+          <circle cx="30" cy="46" r="6" fill="#E3F2FD" stroke="#85BDE8" stroke-width="2"/>
+          <circle cx="58" cy="46" r="7" fill="#E3F2FD" stroke="#85BDE8" stroke-width="2"/>
+          <circle cx="50" cy="46" r="6" fill="#E3F2FD" stroke="#85BDE8" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <div class="bday-badge">🌧️ Rainy Season Special • 21.12 🎂</div>
+
+      <h1 class="bday-title">Happy 25th birthday</h1>
+      <p class="bday-sub">May the gentle rain bring calm, joy &amp; warm wishes ✨</p>
+
+      <!-- Birthday Cake with Lit Candles -->
+      <div class="cake-container">
+        <div class="candle-ambient-glow"></div>
+        <svg width="215" height="205" viewBox="0 0 220 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Plate shadow & Plate -->
+          <ellipse cx="110" cy="186" rx="86" ry="14" fill="#9BC9EE" opacity="0.45"/>
+          <ellipse cx="110" cy="181" rx="82" ry="12" fill="#FFFFFF" stroke="#8BC2ED" stroke-width="2.5"/>
+
+          <!-- Bottom Cake Tier -->
+          <rect x="42" y="128" width="136" height="50" rx="14" fill="#FFDDE8" stroke="#F29DB8" stroke-width="2.5"/>
+          <!-- Bottom Tier Icing Drips -->
+          <path d="M42 136C42 128 50 128 50 128H170C170 128 178 128 178 136V141C178 147 170 147 167 142C164 137 159 149 154 149C149 149 146 139 140 140C134 141 131 152 125 152C119 152 117 141 110 141C103 141 101 151 95 151C89 151 86 140 80 140C74 140 71 148 65 148C59 148 56 139 51 142C47 144 42 145 42 140V136Z" fill="#FFF8FB" stroke="#F29DB8" stroke-width="2"/>
+
+          <!-- Top Cake Tier -->
+          <rect x="62" y="84" width="96" height="46" rx="12" fill="#BCE3FF" stroke="#76B7EB" stroke-width="2.5"/>
+          <!-- Top Tier Cream Frosting Drips -->
+          <path d="M62 92C62 84 70 84 70 84H150C150 84 158 84 158 92V96C158 102 151 103 148 98C145 94 141 105 135 105C129 105 127 95 121 96C115 97 113 107 107 107C101 107 98 96 92 96C86 96 84 104 78 104C72 104 70 96 66 98C63 99 62 97 62 92Z" fill="#FFFFFF" stroke="#76B7EB" stroke-width="2"/>
+
+          <!-- Cute Cake Sprinkles & Berries -->
+          <circle cx="80" cy="116" r="3" fill="#FF8FB1"/>
+          <circle cx="110" cy="118" r="3" fill="#FFD166"/>
+          <circle cx="140" cy="116" r="3" fill="#7AD3A8"/>
+          <circle cx="64" cy="162" r="3.5" fill="#76B7EB"/>
+          <circle cx="94" cy="164" r="3.5" fill="#FFD166"/>
+          <circle cx="126" cy="164" r="3.5" fill="#FF8FB1"/>
+          <circle cx="155" cy="161" r="3.5" fill="#7AD3A8"/>
+
+          <!-- Cute smiling face on bottom tier -->
+          <circle cx="97" cy="158" r="2.6" fill="#5A3E4B"/>
+          <circle cx="123" cy="158" r="2.6" fill="#5A3E4B"/>
+          <path d="M106 162C108 165 112 165 114 162" stroke="#5A3E4B" stroke-width="2.2" stroke-linecap="round"/>
+
+          <!-- Candle 1 (Left) -->
+          <rect x="78" y="49" width="11" height="35" rx="4" fill="#FFD166" stroke="#E0A538" stroke-width="2"/>
+          <path d="M79 58L88 54M79 68L88 64M79 78L88 74" stroke="#FFF4D2" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="83.5" y1="49" x2="83.5" y2="43" stroke="#5A3E4B" stroke-width="2" stroke-linecap="round"/>
+          <!-- Flame 1 -->
+          <g class="flame">
+            <path d="M83.5 23C83.5 23 91 32 91 37.5C91 41.6 87.6 44.5 83.5 44.5C79.4 44.5 76 41.6 76 37.5C76 32 83.5 23 83.5 23Z" fill="#FF9F43"/>
+            <path d="M83.5 29C83.5 29 87.5 34.5 87.5 38C87.5 40.5 85.7 42.5 83.5 42.5C81.3 42.5 79.5 40.5 79.5 38C79.5 34.5 83.5 29 83.5 29Z" fill="#FFF275"/>
+          </g>
+
+          <!-- Candle 2 (Center - taller) -->
+          <rect x="104.5" y="42" width="11" height="42" rx="4" fill="#FF9EBB" stroke="#E06D91" stroke-width="2"/>
+          <path d="M105.5 52L114.5 48M105.5 62L114.5 58M105.5 72L114.5 68" stroke="#FFEBF1" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="110" y1="42" x2="110" y2="36" stroke="#5A3E4B" stroke-width="2" stroke-linecap="round"/>
+          <!-- Flame 2 -->
+          <g class="flame flame-2">
+            <path d="M110 14C110 14 118 24 118 30C118 34.4 114.4 37.5 110 37.5C105.6 37.5 102 34.4 102 30C102 24 110 14 110 14Z" fill="#FF9F43"/>
+            <path d="M110 21C110 21 114.2 27 114.2 30.8C114.2 33.4 112.3 35.4 110 35.4C107.7 35.4 105.8 33.4 105.8 30.8C105.8 27 110 21 110 21Z" fill="#FFF275"/>
+          </g>
+
+          <!-- Candle 3 (Right) -->
+          <rect x="131" y="49" width="11" height="35" rx="4" fill="#8CD7B2" stroke="#52A97E" stroke-width="2"/>
+          <path d="M132 58L141 54M132 68L141 64M132 78L141 74" stroke="#E6FFF2" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="136.5" y1="49" x2="136.5" y2="43" stroke="#5A3E4B" stroke-width="2" stroke-linecap="round"/>
+          <!-- Flame 3 -->
+          <g class="flame flame-3">
+            <path d="M136.5 23C136.5 23 144 32 144 37.5C144 41.6 140.6 44.5 136.5 44.5C132.4 44.5 129 41.6 129 37.5C129 32 136.5 23 136.5 23Z" fill="#FF9F43"/>
+            <path d="M136.5 29C136.5 29 140.5 34.5 140.5 38C140.5 40.5 138.7 42.5 136.5 42.5C134.3 42.5 132.5 40.5 132.5 38C132.5 34.5 136.5 29 136.5 29Z" fill="#FFF275"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Birthday Sticker Row -->
+      <div class="bday-sticker-row">
+        <!-- Gift Box Sticker -->
+        <div class="sticker sticker-float">
+          <svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="6" width="52" height="52" rx="18" fill="white"/>
+            <rect x="16" y="27" width="32" height="23" rx="4" fill="#A6D8FF" stroke="#579BD6" stroke-width="2"/>
+            <rect x="14" y="21" width="36" height="8" rx="3" fill="#C7E7FF" stroke="#579BD6" stroke-width="2"/>
+            <rect x="29" y="21" width="6" height="29" fill="#FF8FB1"/>
+            <path d="M32 21C27 14 21 15 22 19C23 22 32 21 32 21Z" fill="#FF8FB1" stroke="#E06D91" stroke-width="1.5"/>
+            <path d="M32 21C37 14 43 15 42 19C41 22 32 21 32 21Z" fill="#FF8FB1" stroke="#E06D91" stroke-width="1.5"/>
+          </svg>
+        </div>
+
+        <!-- Cozy Rainy Heart Sticker -->
+        <div class="sticker sticker-float-slow">
+          <svg width="54" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="26" fill="white"/>
+            <path d="M32 49C32 49 15 38.5 15 26.5C15 21 19.3 17 24.5 17C28 17 30.8 18.8 32 21.5C33.2 18.8 36 17 39.5 17C44.7 17 49 21 49 26.5C49 38.5 32 49 32 49Z" fill="#FF9EBB" stroke="#E36D90" stroke-width="2"/>
+            <text x="32" y="35" text-anchor="middle" fill="white" font-family="Fredoka, sans-serif" font-size="13" font-weight="700">25</text>
+          </svg>
+        </div>
+
+        <!-- Balloon Sticker -->
+        <div class="sticker sticker-float">
+          <svg width="52" height="54" viewBox="0 0 64 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="5" width="48" height="56" rx="22" fill="white"/>
+            <ellipse cx="26" cy="25" rx="11" ry="14" fill="#8CD7B2" stroke="#53A87E" stroke-width="2"/>
+            <ellipse cx="38" cy="29" rx="11" ry="14" fill="#FFD166" stroke="#DC9E34" stroke-width="2"/>
+            <path d="M26 39C25 46 28 51 26 56" stroke="#7A9CB8" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M38 43C39 49 36 53 38 57" stroke="#7A9CB8" stroke-width="1.8" stroke-linecap="round"/>
+            <ellipse cx="34" cy="24" rx="2.2" ry="4.5" transform="rotate(-18 34 24)" fill="white" opacity="0.7"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="wish-pill">
+        Wishing you a cozy, bright &amp; wonderful 25th year ahead! 💙🌧️🕯️
+      </div>
+
+      <!-- Bottom Left Corner Sticker: Cute Smiling Cloud -->
+      <div class="corner-sticker corner-bl sticker sticker-float-slow">
+        <svg width="56" height="48" viewBox="0 0 74 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 48H54C61 48 66 42.5 66 35.5C66 29.2 61.4 24 55.2 23C53 15 45.8 9 37 9C26.5 9 18 17.5 18 28C18 28.4 18 28.8 18.1 29.1C12.9 30.5 9 35.2 9 40.8C9 44.8 12.2 48 16.2 48H20Z" fill="white" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+          <path d="M20 48H54C61 48 66 42.5 66 35.5C66 29.2 61.4 24 55.2 23C53 15 45.8 9 37 9C26.5 9 18 17.5 18 28C18 28.4 18 28.8 18.1 29.1C12.9 30.5 9 35.2 9 40.8C9 44.8 12.2 48 16.2 48H20Z" fill="#E3F2FD" stroke="#7EB8EB" stroke-width="2.2"/>
+          <circle cx="31" cy="33" r="2.2" fill="#2A547E"/>
+          <circle cx="44" cy="33" r="2.2" fill="#2A547E"/>
+          <path d="M35 37C36.5 39 39 39 40.5 37" stroke="#2A547E" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* ============================================================
+       1. SOFT BLURRY DRIZZLE RAIN EFFECT (မိုးဖွဲဖွဲ ဝါးဝါးလေး)
+       ============================================================ */
+    const rainCanvas = document.getElementById('rainCanvas');
+    const rCtx = rainCanvas.getContext('2d');
+
+    let drops = [];
+    let w, h;
+
+    function resizeRain() {
+      w = rainCanvas.width = window.innerWidth;
+      h = rainCanvas.height = window.innerHeight;
+      const dropCount = Math.min(130, Math.floor((w * h) / 7500));
+      drops = Array.from({ length: dropCount }, () => createDrop(true));
+    }
+
+    function createDrop(randomY = false) {
+      return {
+        x: Math.random() * (w + 60) - 30,
+        y: randomY ? Math.random() * h : -Math.random() * 120,
+        len: 14 + Math.random() * 22,
+        speed: 3.2 + Math.random() * 3.8,
+        drift: -0.6 - Math.random() * 0.5,
+        width: 1.2 + Math.random() * 1.6,
+        alpha: 0.25 + Math.random() * 0.45
+      };
+    }
+
+    function drawRain() {
+      rCtx.clearRect(0, 0, w, h);
+
+      for (let i = 0; i < drops.length; i++) {
+        const d = drops[i];
+        rCtx.beginPath();
+        rCtx.moveTo(d.x, d.y);
+        rCtx.lineTo(d.x + d.drift * 2.5, d.y + d.len);
+        rCtx.strokeStyle = `rgba(255, 255, 255, ${d.alpha})`;
+        rCtx.lineWidth = d.width;
+        rCtx.lineCap = 'round';
+        rCtx.stroke();
+
+        d.x += d.drift;
+        d.y += d.speed;
+
+        if (d.y > h + 30 || d.x < -40) {
+          drops[i] = createDrop(false);
+        }
+      }
+
+      requestAnimationFrame(drawRain);
+    }
+
+    window.addEventListener('resize', resizeRain);
+    resizeRain();
+    drawRain();
+
+    /* ============================================================
+       2. PASSWORD LOGIC ('21122001')
+       ============================================================ */
+    const CORRECT_PW = '21122001';
+    const lockScreen = document.getElementById('lockScreen');
+    const birthdayScreen = document.getElementById('birthdayScreen');
+    const pwInput = document.getElementById('passwordInput');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const toggleVis = document.getElementById('toggleVis');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    let unlocked = false;
+
+    // Allow digits only
+    pwInput.addEventListener('input', () => {
+      pwInput.value = pwInput.value.replace(/[^0-9]/g, '');
+      errorMsg.classList.remove('show');
+    });
+
+    // Toggle password visibility
+    toggleVis.addEventListener('click', () => {
+      const isHidden = pwInput.type === 'password';
+      pwInput.type = isHidden ? 'text' : 'password';
+      eyeIcon.innerHTML = isHidden
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path>
+           <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
+           <line x1="1" y1="1" x2="23" y2="23"></line>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+           <circle cx="12" cy="12" r="3"></circle>`;
+    });
+
+    function checkPassword() {
+      if (unlocked) return;
+      const entered = pwInput.value.trim();
+
+      if (entered === CORRECT_PW) {
+        unlocked = true;
+        errorMsg.classList.remove('show');
+        lockScreen.classList.add('fade-out');
+
+        setTimeout(() => {
+          lockScreen.classList.add('hidden');
+          birthdayScreen.classList.remove('hidden');
+          birthdayScreen.classList.add('pop-in');
+          startConfetti();
+        }, 480);
+      } else {
+        errorMsg.textContent = entered.length === 0
+          ? 'Please enter the password first 💧'
+          : 'Wrong password! Check the hint below 🌧️';
+        errorMsg.classList.add('show');
+        lockScreen.classList.remove('shake');
+        void lockScreen.offsetWidth; // trigger reflow
+        lockScreen.classList.add('shake');
+      }
+    }
+
+    unlockBtn.addEventListener('click', checkPassword);
+    pwInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    });
+
+    /* ============================================================
+       3. PASTEL CONFETTI CELEBRATION ON UNLOCK
+       ============================================================ */
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cCtx = confettiCanvas.getContext('2d');
+    let particles = [];
+    let confettiActive = false;
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function startConfetti() {
+      confettiActive = true;
+      const colors = ['#FF8FB1', '#FFD166', '#8CD7B2', '#76B7EB', '#FFFFFF'];
+      particles = Array.from({ length: 70 }, () => ({
+        x: Math.random() * confettiCanvas.width,
+        y: -20 - Math.random() * 250,
+        size: 5 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speedY: 1.8 + Math.random() * 2.5,
+        speedX: (Math.random() - 0.5) * 1.8,
+        angle: Math.random() * 360,
+        spin: (Math.random() - 0.5) * 6,
+        alpha: 0.9
+      }));
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      if (!confettiActive) return;
+      cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+      let alive = 0;
+      for (const p of particles) {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        p.angle += p.spin;
+        if (p.y > confettiCanvas.height * 0.75) {
+          p.alpha -= 0.015;
+        }
+        if (p.alpha > 0 && p.y < confettiCanvas.height + 20) {
+          alive++;
+          cCtx.save();
+          cCtx.globalAlpha = Math.max(0, p.alpha);
+          cCtx.translate(p.x, p.y);
+          cCtx.rotate((p.angle * Math.PI) / 180);
+          cCtx.fillStyle = p.color;
+          cCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          cCtx.restore();
+        }
+      }
+
+      if (alive > 0) {
+        requestAnimationFrame(animateConfetti);
+      } else {
+        confettiActive = false;
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+  </script>
+</body>
+</html>
