@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Do You Love Me? 💌</title>
+
+  <!-- Messenger / Telegram မှာ Link ပို့ရင် Preview လှအောင် -->
+  <meta property="og:title" content="I have a question for you... 💌" />
+  <meta property="og:description" content="Tap to open this little surprise! ✨" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: "Segoe UI", "Quicksand", "Nunito", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #fff5f8 0%, #ffe0eb 50%, #ffd1e3 100%);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* နောက်ခံမှာ လွင့်နေမယ့် အသည်းပုံလေးများ */
+    .bg-hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .bg-heart {
+      position: absolute;
+      bottom: -40px;
+      font-size: 20px;
+      opacity: 0.35;
+      animation: floatUp linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+      }
+      15% {
+        opacity: 0.4;
+      }
+      85% {
+        opacity: 0.3;
+      }
+      100% {
+        transform: translateY(-110vh) rotate(25deg);
+        opacity: 0;
+      }
+    }
+
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* အလယ် Card */
+    .card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 2px solid #ffffff;
+      border-radius: 30px;
+      padding: 32px 24px 36px;
+      text-align: center;
+      box-shadow: 0 18px 45px rgba(255, 105, 155, 0.22);
+      animation: popIn 0.5s ease-out;
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0.88);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .sticker-wrap {
+      width: 175px;
+      height: 175px;
+      margin: 0 auto 18px;
+      border-radius: 22px;
+      background: #fff7fa;
+      border: 2px dashed #ffc2d6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .sticker-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 16px;
+    }
+
+    .fallback-emoji {
+      font-size: 86px;
+      display: none;
+      animation: bounce 1.4s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    h1 {
+      color: #d6336c;
+      font-size: clamp(1.5rem, 5.5vw, 1.9rem);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #9c526b;
+      font-size: 0.96rem;
+      min-height: 24px;
+      margin-bottom: 24px;
+      transition: all 0.25s ease;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      min-height: 60px;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 700;
+      border-radius: 999px;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, font-size 0.2s ease, padding 0.2s ease;
+      user-select: none;
+    }
+
+    #yesBtn {
+      background: linear-gradient(135deg, #ff5c93, #ff3377);
+      color: #ffffff;
+      font-size: 1.1rem;
+      padding: 13px 30px;
+      box-shadow: 0 8px 20px rgba(255, 51, 119, 0.32);
+    }
+
+    #yesBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(255, 51, 119, 0.42);
+    }
+
+    #yesBtn:active {
+      transform: scale(0.96);
+    }
+
+    #noBtn {
+      background: #ffffff;
+      color: #b5486e;
+      border: 2px solid #ffb3cc;
+      font-size: 1rem;
+      padding: 12px 26px;
+      box-shadow: 0 4px 12px rgba(255, 105, 155, 0.12);
+    }
+
+    .celebrate-text {
+      animation: heartbeat 1.3s infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.05); }
+      50% { transform: scale(1); }
+      75% { transform: scale(1.03); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-hearts" id="bgHearts"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <main class="card">
+    <div class="sticker-wrap">
+      <!-- Milk & Mocha Bear GIF -->
+      <img
+        id="stickerImg"
+        src="https://media1.giphy.com/media/IzXiddo2twMmdmU8Lv/giphy.gif"
+        alt="Cute bear sticker"
+      />
+      <div id="fallbackEmoji" class="fallback-emoji">🧸💖</div>
+    </div>
+
+    <h1 id="questionText">Do you love me?</h1>
+    <p class="subtitle" id="subText">Please answer honestly 🥺👉👈</p>
+
+    <div class="buttons" id="buttonsBox">
+      <button id="yesBtn">Yes! 💖</button>
+      <button id="noBtn">No</button>
+    </div>
+  </main>
+
+  <script>
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const buttonsBox = document.getElementById("buttonsBox");
+    const stickerImg = document.getElementById("stickerImg");
+    const fallbackEmoji = document.getElementById("fallbackEmoji");
+    const questionText = document.getElementById("questionText");
+    const subText = document.getElementById("subText");
+    const bgHearts = document.getElementById("bgHearts");
+
+    const ASK_GIF = "https://media1.giphy.com/media/IzXiddo2twMmdmU8Lv/giphy.gif";
+    const HAPPY_GIF = "https://media.tenor.com/UYv3jDzYBgYAAAAM/milk-mocha-bear.gif";
+
+    // GIF ပုံ Error တက်ခဲ့ရင် Emoji အရုပ်လေး အစားထိုးပြဖို့
+    stickerImg.addEventListener("error", () => {
+      stickerImg.style.display = "none";
+      fallbackEmoji.style.display = "block";
+    });
+
+    // နောက်ခံ အသည်းပုံလေးတွေ ဖန်တီးခြင်း
+    const heartIcons = ["💗", "💖", "💕", "🌸", "🤍"];
+    for (let i = 0; i < 16; i++) {
+      const span = document.createElement("span");
+      span.className = "bg-heart";
+      span.textContent = heartIcons[i % heartIcons.length];
+      span.style.left = Math.random() * 100 + "vw";
+      span.style.fontSize = 14 + Math.random() * 16 + "px";
+      span.style.animationDuration = 6 + Math.random() * 7 + "s";
+      span.style.animationDelay = Math.random() * 6 + "s";
+      bgHearts.appendChild(span);
+    }
+
+    const noMessages = [
+      "Wait... are you sure? 🥺",
+      "Think again please! 💕",
+      "Don't break my heart! 💔",
+      "Catch me if you can! 😜",
+      "Pretty please? 🧸✨",
+      "Look at the Yes button! 👉💖",
+      "Just say Yes already! 🥰"
+    ];
+
+    let noCount = 0;
+    let lastMoveTime = 0;
+
+    function dodgeNoButton() {
+      const now = Date.now();
+      if (now - lastMoveTime < 150) return; // Mobile မှာ နှစ်ခါဆက်တိုက် မရွေ့အောင်
+      lastMoveTime = now;
+
+      noCount++;
+
+      // 1. Sub-text စာသားပြောင်းခြင်း
+      subText.textContent = noMessages[(noCount - 1) % noMessages.length];
+
+      // 2. 'No' ခလုတ်ကို Screen ထဲမှာပဲ ကျပန်းနေရာ ရွှေ့ခြင်း
+      noBtn.style.position = "fixed";
+      noBtn.style.zIndex = "50";
+
+      const margin = 20;
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
+      const maxX = Math.max(margin, window.innerWidth - btnWidth - margin);
+      const maxY = Math.max(margin, window.innerHeight - btnHeight - margin);
+
+      const randomX = Math.floor(margin + Math.random() * (maxX - margin));
+      const randomY = Math.floor(margin + Math.random() * (maxY - margin));
+
+      noBtn.style.left = randomX + "px";
+      noBtn.style.top = randomY + "px";
+
+      // 3. 'No' ခလုတ်ကို တဖြည်းဖြည်း သေးစေခြင်း
+      const noScale = Math.max(0.55, 1 - noCount * 0.07);
+      noBtn.style.transform = `scale(${noScale})`;
+
+      // 4. 'Yes' ခလုတ်ကို တဖြည်းဖြည်း ကြီးစေခြင်း
+      const newFontSize = Math.min(2.3, 1.1 + noCount * 0.18);
+      const newPadY = Math.min(24, 13 + noCount * 1.8);
+      const newPadX = Math.min(54, 30 + noCount * 3.5);
+      yesBtn.style.fontSize = `${newFontSize}rem`;
+      yesBtn.style.padding = `${newPadY}px ${newPadX}px`;
+    }
+
+    // ကွန်ပျူတာ Mouse တင်လိုက်ရင် ပြေးမယ်
+    if (window.matchMedia("(hover: hover)").matches) {
+      noBtn.addEventListener("mouseenter", dodgeNoButton);
+    }
+
+    // ဖုန်းနဲ့ နှိပ်လိုက်ရင်လည်း ပြေးမယ်
+    noBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      dodgeNoButton();
+    });
+
+    // 'Yes' ကို နှိပ်လိုက်တဲ့အခါ
+    yesBtn.addEventListener("click", () => {
+      stickerImg.style.display = "block";
+      fallbackEmoji.style.display = "none";
+      stickerImg.src = HAPPY_GIF;
+      fallbackEmoji.textContent = "🥰🎉❤️";
+
+      questionText.textContent = "Yay! I love you too! ❤️";
+      questionText.classList.add("celebrate-text");
+      subText.textContent = "Best decision ever! 🥰✨";
+
+      noBtn.style.display = "none";
+      buttonsBox.style.display = "none";
+
+      launchConfetti();
+    });
+
+    // Confetti (ပန်းစက္ကူလေးတွေ) Effect
+    function launchConfetti() {
+      const canvas = document.getElementById("confetti-canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ["#ff4d88", "#ff85ad", "#ffd166", "#ffffff", "#ff9ebb", "#f72585"];
+      const pieces = [];
+      const total = 150;
+
+      for (let i = 0; i < total; i++) {
+        pieces.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          w: 7 + Math.random() * 8,
+          h: 5 + Math.random() * 7,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          speedY: 2.5 + Math.random() * 4.5,
+          speedX: (Math.random() - 0.5) * 3,
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 8
+        });
+      }
+
+      let frame = 0;
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        frame++;
+
+        pieces.forEach((p) => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.rotation += p.rotSpeed;
+
+          // ပထမ ၄ စက္ကန့်လောက် အပေါ်ကနေ ဆက်တိုက်ပြန်ကျနေအောင်
+          if (p.y > canvas.height && frame < 240) {
+            p.y = -20;
+            p.x = Math.random() * canvas.width;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+
+        if (frame < 420) {
+          requestAnimationFrame(animate);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      animate();
+    }
+  </script>
+</body>
+</html>
